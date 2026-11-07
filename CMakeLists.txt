@@ -16,7 +16,7 @@ message(STATUS "OpenCV include: ${OpenCV_INCLUDE_DIRS}")
 message(STATUS "OpenCV libs   : ${OpenCV_LIBS}")
 
 
-add_executable(armor_detect 源1.cpp 装甲板识别.h)
+add_executable(armor_detect 源1.cpp)
 
 target_include_directories(armor_detect PRIVATE ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(armor_detect PRIVATE ${OpenCV_LIBS})
@@ -26,19 +26,16 @@ if(MSVC)
 endif()
 
 
-if(WIN32 AND OpenCV_DIR)
-    set(_ocv_bin "${OpenCV_DIR}/x64/vc16/bin")
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(_ocv_dlls "${_ocv_bin}/opencv_world500d.dll" "${_ocv_bin}/opencv_videoio_msmf500_64d.dll")
-    else()
-        set(_ocv_dlls "${_ocv_bin}/opencv_world500.dll" "${_ocv_bin}/opencv_videoio_msmf500_64.dll")
+if(WIN32 AND OpenCV_DIR AND OpenCV_RUNTIME)
+    set(_ocv_bin "${OpenCV_DIR}/x64/${OpenCV_RUNTIME}/bin")
+    string(REPLACE "." "" _ocv_ver "${OpenCV_VERSION}")
+    set(_ocv_world "$<IF:$<CONFIG:Debug>,${_ocv_bin}/opencv_world${_ocv_ver}d.dll,${_ocv_bin}/opencv_world${_ocv_ver}.dll>")
+    if(EXISTS "${_ocv_bin}")
+        add_custom_command(TARGET armor_detect POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_ocv_world}" "$<TARGET_FILE_DIR:armor_detect>"
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/images" "$<TARGET_FILE_DIR:armor_detect>/images"
+            COMMENT "Copying OpenCV runtime DLL and images next to armor_detect.exe"
+            VERBATIM
+        )
     endif()
-    list(APPEND _ocv_dlls "${_ocv_bin}/opencv_videoio_ffmpeg500_64.dll")
-
-    add_custom_command(TARGET armor_detect POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_ocv_dlls} "$<TARGET_FILE_DIR:armor_detect>"
-        COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/images" "$<TARGET_FILE_DIR:armor_detect>/images"
-        COMMENT "Copying OpenCV runtime DLLs and images next to armor_detect.exe"
-        VERBATIM
-    )
 endif()

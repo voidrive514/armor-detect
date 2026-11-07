@@ -10,7 +10,7 @@ const string DEFAULT_IMAGE = "images/outpost_frame.png";
 const int   S_MIN = 100;                 // 饱和度下限
 const int   V_MIN = 120;                 // 亮度下限
 const int   DIFF_THRESH = 60;            // 红蓝差阈值
-const cv::Size KERNEL_SIZE(10, 50);      // 闭运算的核
+const cv::Size KERNEL_SIZE(20, 60);      // 闭运算的核
 const double MIN_AREA = 20;              // 灯条最小面积
 const float MIN_ASPECT = 3.0f;           // 灯条最小长宽比
 const float MIN_LEN_RATIO = 0.7f;        // 两灯条长度比下限
